@@ -1,0 +1,84 @@
+; ==============================================================================
+; Term Macro Script: キーエンスPLCデータ収集 (KEYENCE KV 上位リンク)
+; 生成AI: Antigravity (Gemini 4 Carbon (Medium))
+; 対象システム: キーエンス KV-8000 / 7500 / 5500 / 5000 / 3000 / Nano シリーズ (上位リンク通信)
+; ==============================================================================
+TITLE, "キーエンスPLCデータ収集 (KEYENCE KV 上位リンク)"
+
+; ------------------------------------------------------------------------------
+; コマンド定義: PORT_OPEN (通信ポート接続)
+; ------------------------------------------------------------------------------
+COMMAND, "PORT_OPEN"
+,PARAM, PROTOCOL, List, "通信プロトコル", "TCP", "UDP", "Serial"
+,PARAM, ENDPOINT, Text, "接続先IPまたはCOMポート", "192.168.0.10"
+,PARAM, PORT_OPT, Text, "ポート番号または通信条件", "8501"
+,PARAM, DATA_SUFFIX, List, "既定データ形式", ".U", ".S", ".H", ".D", ".L"
+,PARAM, AUTO_CR_CQ, List, "シリアルCR/CQ自動送出", "ON", "OFF"
+,SEQUENCE, 10, Kv_Mode, "$PROTOCOL$", "$DATA_SUFFIX$", "$AUTO_CR_CQ$"
+,SEQUENCE, 20, Kv_Open, "$ENDPOINT$", "$PORT_OPT$", "$PROTOCOL$"
+,SEQUENCE, 30, Exit
+
+; ------------------------------------------------------------------------------
+; コマンド定義: READ_START (読み出し開始・初期確認)
+; ------------------------------------------------------------------------------
+COMMAND, "READ_START", ON
+,PARAM, DEV_TYPE, List, "デバイス種別", "DM", "EM", "FM", "ZF", "W", "TM"
+,PARAM, ADDR_STATUS, Text, "状態確認アドレス", "100"
+,PARAM, ADDR_CTRL, Text, "制御コマンドアドレス", "101"
+,PARAM, POINTS, Text, "アクセス点数", "1"
+,PARAM, VAL_INIT_CTRL, Text, "開始要求設定値", "1"
+,PARAM, STATUS, Work, "判定結果", ""
+,SEQUENCE, 10, Kv_ReadWord, "$DEV_TYPE$$ADDR_STATUS$", "$POINTS$", "STATUS", "DEC"
+,SEQUENCE, 20, Judge, EQU, "$STATUS$", "0", #ERR_EXIT#
+,SEQUENCE, 30, Kv_WriteWord, "$DEV_TYPE$$ADDR_CTRL$", "$VAL_INIT_CTRL$"
+,SEQUENCE, 40, Exit
+,SEQUENCE, #ERR_EXIT#, Exit
+
+; ------------------------------------------------------------------------------
+; コマンド定義: NUM_READ (数値データ読み出し)
+; ------------------------------------------------------------------------------
+COMMAND, "NUM_READ", "RESULT_DATA"
+,PARAM, DEV_TYPE, List, "デバイス種別", "DM", "EM", "FM", "ZF", "W", "TM"
+,PARAM, DEV_ADDR, Text, "読出デバイス番号", "200"
+,PARAM, POINTS, Text, "読出点数", "1"
+,PARAM, ADDR_CTRL, Text, "復旧制御アドレス", "101"
+,PARAM, VAL_RECOVERY, Text, "復旧制御設定値", "2"
+,PARAM, RESULT_DATA, Range, "読出データ結果", ""
+,SEQUENCE, #RETRY#, Kv_ReadWord, "$DEV_TYPE$$DEV_ADDR$", "$POINTS$", "RESULT_DATA", "DEC"
+,SEQUENCE, 20, Judge, NEQ, "$RESULT_DATA$", "ERROR_TIMEOUT", #RETRY_FAIL#
+,SEQUENCE, 30, Exit
+,SEQUENCE, #RETRY_FAIL#, Kv_WriteWord, "$DEV_TYPE$$ADDR_CTRL$", "$VAL_RECOVERY$"
+,SEQUENCE, 50, Jump, #RETRY#
+
+; ------------------------------------------------------------------------------
+; コマンド定義: REG_READ (データメモリHEX一括読み出し)
+; ------------------------------------------------------------------------------
+COMMAND, "REG_READ", "RESULT_DATA"
+,PARAM, DEV_TYPE, List, "デバイス種別", "DM", "EM", "FM", "ZF", "W", "TM"
+,PARAM, DEV_ADDR, Text, "読出デバイス番号", "200"
+,PARAM, POINTS, Text, "読出点数", "2"
+,PARAM, RESULT_DATA, Range, "メモリHEXデータ", ""
+,SEQUENCE, 10, Kv_ReadWord, "$DEV_TYPE$$DEV_ADDR$", "$POINTS$", "RESULT_DATA", "HEX"
+,SEQUENCE, 20, Exit
+
+; ------------------------------------------------------------------------------
+; コマンド定義: BIT_CHECK (内部補助リレー状態確認)
+; ------------------------------------------------------------------------------
+COMMAND, "BIT_CHECK", "BIT_STATUS"
+,PARAM, BIT_DEV, Text, "監視先頭リレー", "MR100"
+,PARAM, BIT_POINTS, Text, "読出リレー点数", "4"
+,PARAM, BIT_STATUS, Range, "リレー状態結果", ""
+,SEQUENCE, 10, Kv_ReadBit, "$BIT_DEV$", "$BIT_POINTS$", "BIT_STATUS"
+,SEQUENCE, 20, Exit
+
+; ------------------------------------------------------------------------------
+; コマンド定義: PORT_CLOSE (通信ポート切断)
+; ------------------------------------------------------------------------------
+COMMAND, "PORT_CLOSE"
+,PARAM, DEV_TYPE, List, "デバイス種別", "DM", "EM", "FM", "ZF", "W", "TM"
+,PARAM, ADDR_CTRL, Text, "制御コマンドアドレス", "101"
+,PARAM, VAL_RESET, Text, "復旧初期設定値", "0"
+,SEQUENCE, 10, Kv_WriteWord, "$DEV_TYPE$$ADDR_CTRL$", "$VAL_RESET$"
+,SEQUENCE, 20, Kv_Close
+,SEQUENCE, 30, Exit
+
