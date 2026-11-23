@@ -15,27 +15,27 @@
 
 ## 📖 概要
 
-**TermAddIn_Keyence** は、Excel 総合通信アドイン **TermAddIn** 上で動作する **キーエンス（KEYENCE）製 PLC（KV-8000 / KV-7500 / KV-7300 / KV-5500 / KV-5000 / KV-3000 / KV-1000 / KV-Nano シリーズ）向け KV 上位リンク通信専用エクステンション（機能ドメイン単一 DLL）** です。
+**TermAddIn_Keyence** は、Excel 総合通信アドイン **TermAddIn** 上で動作する ** キーエンス（KEYENCE）製 PLC（KV-8000 / KV-7500 / KV-7300 / KV-5500 / KV-5000 / KV-3000 / KV-1000 / KV-Nano シリーズ）向け KV 上位リンク通信専用エクステンション（機能ドメイン単一 DLL）** です。
 
-KV シリーズの内蔵 Ethernet ポート・Ethernet ユニット（KV-EP21V / KV-LE21V 等）・RS-232C シリアルポートと、 **Ethernet TCP / UDP 上位リンク（標準ポート 8501）** および **RS-232C シリアル上位リンク（`CR` / `CQ` セッション自動送出対応）** を用いてダイレクトに交信します。
+KV シリーズの内蔵 Ethernet ポート・Ethernet ユニット（KV-EP21V / KV-LE21V 等）・RS-232C シリアルポートと、 **Ethernet TCP / UDP 上位リンク（標準ポート 8501） ** および **RS-232C シリアル上位リンク（`CR` / `CQ` セッション自動送出対応）** を用いてダイレクトに交信します。
 
 VBA マクロを一切記述することなく、 **標準の `.xlsx`（マクロ無効ブック）形式のままで KV 各種データメモリ・リレー（DM, EM, FM, ZF, W, TM, Z, R, MR, LR, CR, B 等）の一括読出・一括書込、および任意上位リンクコマンド送受信** を高速・安全に実行できます。
 
 > [!NOTE]
 > **利用前提とライセンス体系**  
 > 本エクステンションは [TermAddIn 本体](https://github.com/Monaca-App/TermAddIn) 上で動作します。  
-> TermAddIn ではプロトコル毎に個別ライセンスを設ける体系を採用しており、本機能のご利用には **`TermAddIn_Keyence` 個別ライセンス（料金未定・準備中）** が適用されます（なお、 **TermAddIn 本体** は現在 **近日公開** であり、全機能を無償でご試用いただける **評価期間は公開時に設定** いたします）。
+> TermAddIn ではプロトコル毎に個別ライセンスを設ける体系を採用しており、本機能のご利用には **`TermAddIn_Keyence` 個別ライセンス（一括 ¥49,000 / 月額 ¥4,400 / 週額 ¥1,500・税別）** が適用されます（ライセンス未配置・無効時は、Excel ブック再オープン時の既存ボタン無効化、および `Term.exe` 単体起動時の 3 分間期間限定版として動作します）。
 
 ---
 
 ## ✨ 主な機能・特徴
 
 1. **Ethernet（TCP / UDP ポート 8501）& RS-232C シリアル上位リンク両対応**
-   * 設定レスで高速交信できる **Ethernet TCP / UDP 上位リンク（標準ポート 8501）** に加え、シリアルポート経由での **`CR` / `CQ` 自動セッション管理付き RS-232C 上位リンク** にも対応。仮想シリアルツール [c2c](https://github.com/Monaca-App/c2c) の KEYENCE KV 仮想スレーブとも直結テストが可能。
+   * 設定レスで高速交信できる **Ethernet TCP / UDP 上位リンク（標準ポート 8501） ** に加え、シリアルポート経由での **`CR` / `CQ` 自動セッション管理付き RS-232C 上位リンク ** にも対応。 **[TermEmulator](https://github.com/Monaca-App/TermEmulator)** の KEYENCE KV 上位リンク仮想スレーブ（Ethernet 直結、または `TermEmulator` ドライバレス仮想 COM ホスト／無償仮想シリアル中継ツール **[c2c](https://github.com/Monaca-App/c2c)** の仮想 COM ペア経由、本ライセンス共用可）とも実機なしで直結テストが可能。
 2. **KV デバイス & データ形式サフィックス（`.U` / `.S` / `.H` / `.D` / `.L`）完全対応**
-   * `DM`, `EM`, `FM`, `ZF`, `TM`, `Z`, `T`, `C`（10進）、`W`（16進リンクレジスタ）、`R`, `MR`, `LR`, `CR`（10進リレー）、`B`, `VB`（16進リレー）およびデータ形式指定サフィックスを自動識別。
+   * `DM`, `D`, `EM`, `FM`, `ZF`, `TM`, `Z`, `T`, `TC`, `TS`, `C`, `CC`, `CS`, `AT`, `CM`, `VM`（10進）、`W`（16進リンクレジスタ）、`R`, `MR`, `LR`, `CR`（10進リレー）、`B`, `VB`（16進リレー）およびデータ形式指定サフィックスを自動識別。
 3. **単一点・連続アクセス電文の自動最適化（RD/RDS, WR/WRS, ST/RS）**
-   * `Kv_ReadWord`, `Kv_WriteWord`, `Kv_ReadBit`, `Kv_WriteBit` が指定点数に応じて単一点コマンド（`RD`, `WR`, `ST`, `RS`）と連続コマンド（`RDS`, `WRS`）を自動選択し、`E0`〜`E6` エラー応答も厳密に検知。
+   * `Kv_ReadWord`, `Kv_WriteWord`, `Kv_ReadBit`, `Kv_WriteBit` が指定点数に応じて単一点コマンド（`RD`, `WR`, `ST`, `RS`）と連続コマンド（`RDS`, `WRS`）を自動選択し、`E0`〜`E9` エラー応答も厳密に検知。
 4. **任意上位リンク ASCII コマンド送受信（Kv_Send / Kv_Receive）**
    * `?K`（機種確認）、`?M`（運転モード確認）、`M1` / `M0`（モード切替）、`?E`（CPU エラー確認）、`WRT`（時計書込）など全上位リンクコマンドを送受信可能。
 5. **Excel 32bit / 64bit 完全動作マトリクス**
@@ -85,6 +85,35 @@ VBA マクロを一切記述することなく、 **標準の `.xlsx`（マク�
 
 ---
 
+## 🚀 インストール手順
+
+<a href="https://github.com/Monaca-App/TermAddIn_Keyence/raw/main/Setup/TermAddIn_Keyence_Setup.zip">
+  <img src="images/Monaca_app_get.jpg" width="140" alt="プログラム（入手）" />
+</a>
+
+> 上記の **「プログラム（入手）」アイコン** をクリックすると、セットアッププログラム一式（[`TermAddIn_Keyence_Setup.zip`](https://github.com/Monaca-App/TermAddIn_Keyence/raw/main/Setup/TermAddIn_Keyence_Setup.zip)）が直接ダウンロードされます。展開後、`TermAnalysis.Keyence\setup.exe`（または `TermAnalysis.Keyence.Setup.msi`）を実行してください。
+
+> [!IMPORTANT]
+> **導入前提**  
+> 本エクステンションを利用するには、事前に **[TermAddIn 本体](https://github.com/Monaca-App/TermAddIn)** （`Term.Setup` および `TermAddIn.Setup`）をインストールしておく必要があります。
+
+### 配布アーカイブ（本リポジトリ `Setup/` 配下）
+
+* **アーカイブ**: [`Setup/TermAddIn_Keyence_Setup.zip`](https://github.com/Monaca-App/TermAddIn_Keyence/raw/main/Setup/TermAddIn_Keyence_Setup.zip)（収録内容: `TermAnalysis.Keyence/setup.exe`, `TermAnalysis.Keyence/TermAnalysis.Keyence.Setup.msi`）
+
+### 導入ステップ
+
+1. **Microsoft Excel** および **Term** をすべて終了します。
+2. ダウンロードした **`TermAddIn_Keyence_Setup.zip`** を展開し、 **`TermAnalysis.Keyence/`** フォルダ内の **`setup.exe`** （または **`TermAnalysis.Keyence.Setup.msi`** ）を実行します。
+   * ※ 管理者権限（UAC 承認）が必要です。
+   * ※ 拡張 DLL は共通インストール先（`C:\Program Files (x86)\Monacaアプリ工房\Monaca Common\`）へ配置され、サンプル資材が `C:\Program Files (x86)\Monacaアプリ工房\Monaca Sample\Keyence\` へ導入されます。
+3. インストール完了後、Excel（または `Term.exe`）を起動し、メイン画面の **`[通信モード]`** メニューから **`KEYENCE KV`** が選択できることを確認します。
+
+### アンインストール手順
+* Windows の「設定」>「アプリ」>「インストールされているアプリ」（または「コントロールパネル」の「プログラムと機能」）から **`TermAnalysis.Keyence.Setup`** を選択してアンインストールしてください。
+
+---
+
 ## 🔄 通信シーケンスの概要
 
 ### KV データメモリ一括読出の流れ
@@ -128,7 +157,7 @@ Ethernet TCP 上位リンクを用いた KV データメモリ（`DM100`〜`DM10
 ```
 
 ### 同梱サンプルマクロ・AI自動生成プロンプト集
-Ethernet（TCP/UDP）および RS-232C シリアル上位リンクに対応した動作確認用マクロスクリプト（CSV）および AI 自動生成プロンプトが **`Sample/Keyence/`** に収録されています（Excel リボンの **「マニュアル配置 (`Make_Doc`)」** 実行時には `<設定場所>\Sample\TermAddIn\Keyence\` へ自動展開されます）。
+Ethernet（TCP/UDP）および RS-232C シリアル上位リンクに対応した動作確認用マクロスクリプト（CSV）および AI 自動生成プロンプトが **`Sample/Keyence/`** に収録されています（インストール時には `C:\Program Files (x86)\Monacaアプリ工房\Monaca Sample\Keyence\` へ配置され、デスクトップの `Monaca\Sample` ショートカットから参照できます）。
 
 * **[`Sample/Keyence/Keyence_KV.csv`](./Sample/Keyence/Keyence_KV.csv)**: KEYENCE KV 上位リンク汎用マクロスクリプトサンプル
 * **[`Sample/Keyence/Keyence_KV_prompt.md`](./Sample/Keyence/Keyence_KV_prompt.md)**: KEYENCE KV 上位リンク用マクロスクリプト AI 自動生成プロンプト
@@ -138,16 +167,15 @@ Ethernet（TCP/UDP）および RS-232C シリアル上位リンクに対応し�
 ## 💳 ライセンス・購入プラン（TermAddIn_Keyence）
 
 > [!NOTE]
-> **料金プランおよび正式販売について**  
-> 本エクステンション（`TermAddIn_Keyence`）の販売料金およびライセンスプラン（買い切り・サブスクリプション）は **現在検討中（未定）** です。  
-> 正式な価格およびお申込み受付開始時期が決定次第、本ドキュメントおよび [Monaca アプリ工房ポータル](https://github.com/Monaca-App/store) にてご案内いたします。  
-> なお、[TermAddIn 本体](https://github.com/Monaca-App/TermAddIn) は現在 **近日公開** となっており、全機能を無償でご試用いただける **評価期間は公開時に設定** いたします。
+> **試用動作およびオンライン決済について**  
+> ライセンス未配置・無効時は、Excel ブック再オープン時の既存ボタン無効化（新規追加ボタンのみ試用可能）、および `Term.exe` 単体起動時の 3 分間期間限定版として動作します。  
+> 用途や利用期間に合わせて、一括購入（買い切り）またはサブスクリプション（月額・週額）からお選びいただけます。メールアドレスの誤入力によるライセンス不着を防ぐため、 **事前のメールアドレス確認** を行った上で、 **Stripe** による安全なオンライン決済へご案内いたします（表記価格はすべて税別です）。
 
-| プラン | 価格 | お支払い・お申込み |
+| プラン | 価格（税別） | お支払い・お申込み |
 | :--- | :---: | :---: |
-| **一括購入（買い切りライセンス）**<br>無期限で永続利用できるライセンスです。 | **未定** | 準備中 |
-| **月額サブスクリプション**<br>月単位で利用できる定期プランです。中長期のプロジェクトにおすすめです。 | **未定** | 準備中 |
-| **週額サブスクリプション**<br>週単位で手軽に利用できるプランです。短期評価や単発テストにおすすめです。 | **未定** | 準備中 |
+| **一括購入（買い切りライセンス）**<br>無期限で永続利用できるライセンスです。 | **¥49,000** | [👉 一括購入手続きへ](https://stripe-license-generator.y-nakai-5a3.workers.dev/?target=keyence) |
+| **月額サブスクリプション**<br>月単位で利用できる定期プランです。中長期のプロジェクトにおすすめです。 | **¥4,400** / 月 | [👉 月額プランに申し込む](https://stripe-license-generator.y-nakai-5a3.workers.dev/?target=keyence) |
+| **週額サブスクリプション**<br>週単位で手軽に利用できるプランです。短期評価や単発テストにおすすめです。 | **¥1,500** / 週 | [👉 週額プランに申し込む](https://stripe-license-generator.y-nakai-5a3.workers.dev/?target=keyence) |
 
 * ※ **ライセンスファイル名**: `TermAddIn_Keyence.License`
 * ※ **配置先**: `%USERPROFILE%\Desktop\Monaca\TermAddIn_Keyence.License`（設定ファイル `Setting.xml` と同階層）
@@ -159,6 +187,7 @@ Ethernet（TCP/UDP）および RS-232C シリアル上位リンクに対応し�
 
 * **開発元**: [Monaca アプリ工房 (Monaca App Store)](https://github.com/Monaca-App/store)
 * **親プロジェクト**: [TermAddIn](https://github.com/Monaca-App/TermAddIn)
+* **関連ツール・シミュレータ**: [TermEmulator - 汎用仮想デバイス＆PLCスレーブ・エミュレータ](https://github.com/Monaca-App/TermEmulator) ／ [c2c - ドライバ不要の仮想ヌルモデム＆通信モニター](https://github.com/Monaca-App/c2c)
 * **Copyright**: Copyright (C) Monaca App Store 2026 All rights reserved.
 * **お問い合わせ**: 不具合報告や機能要望は、GitHub の Issue までお気軽にお寄せください。
 

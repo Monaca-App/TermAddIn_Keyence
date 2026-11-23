@@ -2,8 +2,8 @@
 
 ## 概要
 
-**Kv_WriteBit** は、KEYENCE KV 上位リンクのセット／リセットコマンド（1点時 `ST` / `RS`）または連続書込コマンド（複数点時 `WRS`）を用いて、PLC の **リレー／ビットデバイス（R, MR, LR, B 等）へ ON/OFF 状態を書込** するコマンドです。
-書き込み完了後、KV 本体からの正常応答（`OK`）を自動検証します。
+**Kv_WriteBit** は、KEYENCE KV 上位リンクのセット／リセットコマンド（1 点時 `ST` / `RS`）または連続書込コマンド（複数点時 `WRS`）を用いて、PLC の **リレー／ビットデバイス（R, MR, LR, CR, B, VB, TS, CS、および DM100.05 等のワード内ビット）へ ON/OFF 状態を書込** する通信制御系コマンドです。
+書き込み完了後、KV 本体からの正常確認応答（`OK` / `CC` / `CF`）を自動検証します。
 
 ---
 
@@ -12,15 +12,16 @@
 ### コマンド構文
 
 ```csv
-,SEQUENCE, [ステップキー], Kv_WriteBit, "[Device]", "[Values]"
+,SEQUENCE, [ステップキー], Kv_WriteBit, [Device], [Values], "[Reserved]"
 ```
 
 ### パラメータ（引数）一覧
 
-| 引数位置 | パラメータ名 | 必須/任意 | 型・制約 | 説明 |
-| :--- | :--- | :---: | :--- | :--- |
-| 第 1 引数 | `Device` | 必須 | 文字列（例: `"MR100"`, `"R500"`, `"LR10"`, `"B0"`） | 書き込みを開始する先頭リレー／ビットデバイス名。 |
-| 第 2 引数 | `Values` | 必須 | 文字列（例: `"1"`、`"OFF"`、または `"1, 0, 1"`） | 書き込むビット状態（`1`/`0`, `ON`/`OFF`, `TRUE`/`FALSE` をカンマまたは空白区切りで指定）。 |
+| 引数位置 | 引数名 | 必須/任意 | 説明・制約 |
+| :--- | :--- | :---: | :--- |
+| 第 1 引数 | `Device` | **必須** | 書き込みを開始する先頭リレー／ビットデバイス名（対応デバイス: `R`［接頭辞省略可］, `MR`, `LR`, `CR`, `B`［16進アドレス］, `VB`［16進アドレス］, `TS`, `CS`、およびワードデバイスの `.00`〜`.15` ビット指定。例: `"MR100"`, `"R500"`, `"B0"`, `"DM100.05"`）。 |
+| 第 2 引数 | `Values` | **必須** | 書き込むビット状態（`"1"`/`"ON"`/`"TRUE"` が ON、それ以外が OFF。カンマまたは空白区切りで指定し、1 点時は `ST`/`RS`、2 点以上時は `WRS` 電文を自動構築します。例: `"ON"` または `"1, 0, 1"`）。 |
+| 第 3 引数 | `Reserved` | 任意 | 互換用の予備引数（`ValidateParamRange(2, 3)` により 3 引数まで許容されますが、指定された値は参照されません）。 |
 
 ---
 
@@ -30,7 +31,7 @@
 * **動的置換（`$`）**: 引数内で `$PARAMキー$` のように記述すると、実行時に変数プール（PARAM）の値へ動的置換されます。（適用可能な引数: 全引数対応）
 * **ジャンプ先指定（`#`）**: 本コマンドはジャンプ制御を行わないため適用されません。（適用可能な引数: 非適用）
 * **共通コマンド指定（`@`）**: 本コマンドは外部マクロを呼び出さないため、共通コマンド呼び出し記法は適用されません。（適用可能な引数: 非適用）
-* **カンマのエスケープ**: 通信条件文字列（例: `"9600,E,7,1"`）や複数データのカンマ区切り値を単一引数として渡す場合は、必ず `"..."` と二重引用符で囲んで記述します。
+* **カンマのエスケープ**: 複数データのカンマ区切り値（例: `"1, 0, 1"`）を単一引数として渡す場合は、必ず `"..."` と二重引用符で囲んで記述します。
 * **エイリアス（別名）**: `Kv_Write_Bit`, `Analysis_Kv_WriteBit`
 
 ---
@@ -56,8 +57,8 @@ COMMAND, "SAMPLE_KV_WRITEBIT", ""
 
 ### 実行時の挙動・変数変化
 
-* **実行前の状態**: Term 通信エンジンが初期化され、必要な通信パラメータおよび変数プール（`PARAM`）が準備されている状態。
-* **実行後の状態**: ステップ実行により `Kv_WriteBit` の通信制御・プロトコル処理が正常に遂行され、結果または回線状態が更新されます。
+* **実行前の状態**: `Kv_Open` により KEYENCE KV（`192.168.0.10:8501`, TCP）との通信回線が開設されている状態。
+* **実行後の状態**: ステップ `020` で `"ST MR100\r"` が、ステップ `030` で `"WRS MR200 3 1 0 1\r"` が送受信され、それぞれ `"OK"` 応答が確認されて `param.IsCommandGo = true` となり、ステップ `040` の `Kv_Close` へ進みます。
 
 ---
 
@@ -66,22 +67,25 @@ COMMAND, "SAMPLE_KV_WRITEBIT", ""
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Script as "シーケンス実行エンジン"
+    participant Driver as "TermSequenceDriver (実行エンジン)"
     participant Cmd as "Kv_WriteBitCommand"
-    participant Trans as "Keyence 通信トランスポート"
-    participant Buf as "受信バッファ / 変数プール"
+    participant Engine as "KvDeviceParser / KvUpperLinkEngine"
+    participant Trans as "KvTransportClient.Shared"
 
-    Script->>Cmd: Func(parent, param)
+    Driver->>Driver: ライセンス検証 (ValidateStep)
+    Driver->>Cmd: Func(parent, param)
     activate Cmd
-    Cmd->>Cmd: ライセンス・パラメータ範囲検証 ($PARAM$ 展開)
-    alt 引数および通信状態が正常な場合
-        Cmd->>Trans: プロトコル電文送受信 / 回線制御実行
-        Trans-->>Cmd: 正常応答フレーム / ステータス返却
-        Cmd->>Buf: 結果格納・状態更新 (IsCommandGo = true)
-        Cmd-->>Script: 正常完了 (次ステップへ進行)
-    else パラメータ不正・タイムアウト・異常応答の場合
-        Cmd->>Cmd: エラーログ出力 (_log.LogError)
-        Cmd-->>Script: 安全停止またはエラー結果格納
+    Cmd->>Cmd: ValidateParamRange(2, 3) ＆ $PARAM$ 展開
+    Cmd->>Engine: Parse(devStr) ＆ ParseBitValues(valsStr) ＆ BuildBitWriteCommand(ST / RS / WRS)
+    Cmd->>Trans: TransceiveCommand(reqCmd, param)
+    alt 正常確認応答 (OK / CC / CF)
+        Cmd-->>Driver: 正常完了 (IsCommandGo = true)
+    else 無応答タイムアウト または KV エラー応答 (E0〜E9 等)
+        Cmd->>Cmd: SetErrorAndHalt(-1, errMsg)
+        Cmd-->>Driver: 異常停止 (IsCommandGo = false)
+    else 引数範囲外 または デバイス表記不正例外
+        Cmd->>Cmd: _log.LogError / _log.LogCritical ＆ SetErrorAndHalt
+        Cmd-->>Driver: 異常停止 (IsCommandGo = false)
     end
     deactivate Cmd
 ```
@@ -92,10 +96,10 @@ sequenceDiagram
 
 入力データの異常や実行時エラーに対し、解析・実行エンジンが実行するセーフティ規約です。
 
-1. **引数範囲・プロトコル書式バリデーション保護**:
-   - 必須引数の欠落、デバイス表記・数値範囲の不正、または余剰引数が指定された場合は `_log.LogError` に詳細を記録し、`SetErrorAndHalt` により異常電文の送出を未然に遮断します。
-2. **通信タイムアウト・異常応答・排他ドメイン保護**:
-   - 相手機器の無応答タイムアウト、NAK／異常終了コード応答、または他通信ドメインとの排他競合が発生した場合は、例外クラッシュを起こさず安全にエラーハンドリングを行います。
+1. **引数範囲およびデバイス構文の検証**:
+   - 引数が 1 個以下または 4 個以上の場合は `ValidateParamRange(2, 3)` により `_log.LogError` と `SetErrorAndHalt` で遮断します。未対応デバイスやアドレス不正により `KvDeviceParser.Parse` が例外を送出した場合は、`catch` 節で `_log.LogCritical` に記録し `SetErrorAndHalt(-1, ex.Message)` で安全停止します。
+2. **書込応答タイムアウトおよび KV エラーコード時の停止**:
+   - 受信データが空／空白のみ（タイムアウト）の場合、または KV 本体から `E0`〜`E9` エラーや非 `OK` 応答が返された場合は、`SetErrorAndHalt(-1, ...)` を呼び出してシーケンスを即座に安全停止します。
 
 ---
 
@@ -114,4 +118,4 @@ sequenceDiagram
 | No | テストカテゴリ | テスト条件（入力値） | 期待される結果（出力値） | 検証の目的 / 観点 |
 | :---: | :--- | :--- | :--- | :--- |
 | **1** | 正常系 | `IsSimulationMode = true` 環境下で引数 `"MR100"`, `"ON"` および擬似応答 `"OK\r\n"` を与えて実行 | `!param.HasError` かつ `param.IsCommandGo == true`、`param.SndData == "ST MR100"` となる | 単一点ビット ON 指定時のセットコマンド（`ST`）自動選択および `OK` 応答検証 |
-| **2** | 異常系 | 引数不足・過剰（`ValidateParamRange(2, 3)` 違反）、無応答タイムアウト、または KV エラーコード応答（`E0`〜`E6`） | `SetErrorAndHalt(-1, ...)`（または引数検証エラー）によりエラーを記録して安全に停止する | 引数境界検証および書込タイムアウト・KV エラー応答時のフェイルセーフ検証 |
+| **2** | 異常系 | 引数 0 個（`new TermSequence { Name = "Kv_WriteBit" }`）で `Func(null, invalidParam)` を実行 | `ValidateParamRange(2, 3)` により拒否され、`invalidParam.HasError == true` かつ `!invalidParam.IsCommandGo` となる | 必須引数欠落時のバリデーション拒否検証 |

@@ -3,7 +3,7 @@
 ## 概要
 
 **Kv_Send** は、任意の KEYENCE KV 上位リンク ASCII コマンド文字列へ終端コード `CR`（`\r`）を自動付与して PLC へ直接送出する汎用送信用コマンドです。
-メモリ読書き以外のシステム制御・情報取得コマンド（`?K` 機種コード確認、`?M` 運転モード確認、`M1` RUN 切替、`M0` PROGRAM 切替、`?E` エラー確認、`WRT` 時計設定等）の送信に使用します。
+メモリ読書き以外のシステム制御・情報取得コマンド（`?K` 機種コード確認、`?M` 運転モード確認、`M1` RUN 切替、`M0` PROGRAM 切替、`?E` エラー確認、`WRT` 時計設定等）の送信に使用し、送出時の即時応答を後続の `Kv_Receive` 向けに内部キャッシュします。
 
 ---
 
@@ -12,14 +12,15 @@
 ### コマンド構文
 
 ```csv
-,SEQUENCE, [ステップキー], Kv_Send, "[Command]"
+,SEQUENCE, [ステップキー], Kv_Send, [Command], "[Reserved2]", "[Reserved3]"
 ```
 
 ### パラメータ（引数）一覧
 
-| 引数位置 | パラメータ名 | 必須/任意 | 型・制約 | 説明 |
-| :--- | :--- | :---: | :--- | :--- |
-| 第 1 引数 | `Command` | 必須 | ASCII 文字列（例: `"?K"`, `"?M"`, `"M1"`, `"RD DM0.U"`） | 送信する上位リンクコマンド文字列（末尾の `\r` は自動補完）。 |
+| 引数位置 | 引数名 | 必須/任意 | 説明・制約 |
+| :--- | :--- | :---: | :--- |
+| 第 1 引数 | `Command` | **必須** | 送信する上位リンク ASCII コマンド文字列（例: `"?K"`, `"?M"`, `"M1"`, `"RD DM0.U"`。末尾の `\r` は `NormalizeRawCommand` により自動補完されます。なお空文字 `""` が指定された場合は空文字列のままエラー停止せず `IsCommandGo = true` で完了します）。 |
+| 第 2〜3 引数 | `Reserved2`, `Reserved3` | 任意 | 互換用の予備引数（`ValidateParamRange(1, 3)` により最大 3 引数まで許容されますが、第 2・第 3 引数の値は参照されません）。 |
 
 ---
 
@@ -29,7 +30,7 @@
 * **動的置換（`$`）**: 引数内で `$PARAMキー$` のように記述すると、実行時に変数プール（PARAM）の値へ動的置換されます。（適用可能な引数: 全引数対応）
 * **ジャンプ先指定（`#`）**: 本コマンドはジャンプ制御を行わないため適用されません。（適用可能な引数: 非適用）
 * **共通コマンド指定（`@`）**: 本コマンドは外部マクロを呼び出さないため、共通コマンド呼び出し記法は適用されません。（適用可能な引数: 非適用）
-* **カンマのエスケープ**: 通信条件文字列（例: `"9600,E,7,1"`）や複数データのカンマ区切り値を単一引数として渡す場合は、必ず `"..."` と二重引用符で囲んで記述します。
+* **カンマのエスケープ**: 引数自体にカンマを含める場合は、必ず `"..."` と二重引用符で囲んで記述します。
 * **エイリアス（別名）**: `Kv_S`, `Analysis_Kv_Send`
 
 ---
@@ -41,22 +42,27 @@
 ※COMMAND ブロック配下の子要素行（PARAM, SEQUENCE）は必ず行頭カンマから開始し、スペースインデントや行末コメント（`;`）は記述しないでください。
 
 ```csv
-COMMAND, "SAMPLE_KV_SEND", ""
+COMMAND, "SAMPLE_KV_SEND", "KV_MODEL"
+,PARAM, "KV_MODEL", Work, "KV機種コード", ""
 ; 1. 接続開始
 ,SEQUENCE, 010, Kv_Open, "192.168.0.10", "8501", "TCP"
 ; 2. 接続先 KV の機種コード問合せコマンド (?K) を送信
 ,SEQUENCE, 020, Kv_Send, "?K"
-; 3. 機種コード応答を受信
-,SEQUENCE, 030, Kv_Receive, "@KV_MODEL"
-; 4. 切断
-,SEQUENCE, 040, Kv_Close
-,SEQUENCE, 050, Exit
+; 3. 機種コード応答を受信し KV_MODEL へ格納
+,SEQUENCE, 030, Kv_Receive, "KV_MODEL"
+; 4. 取得した機種コードが空でないか判定（空の場合は #NG_PROC# へ分岐）
+,SEQUENCE, 040, Judge, "NEQ", "$KV_MODEL$", "", "#NG_PROC#"
+,SEQUENCE, 050, Kv_Close
+,SEQUENCE, 060, Exit, "$KV_MODEL$", 0
+; 条件不成立時のクローズ＆異常終了経路
+,SEQUENCE, #NG_PROC#, Kv_Close
+,SEQUENCE, 080, Exit, "NG", -1
 ```
 
 ### 実行時の挙動・変数変化
 
-* **実行前の状態**: Term 通信エンジンが初期化され、必要な通信パラメータおよび変数プール（`PARAM`）が準備されている状態。
-* **実行後の状態**: ステップ実行により `Kv_Send` の通信制御・プロトコル処理が正常に遂行され、結果または回線状態が更新されます。
+* **実行前の状態**: Term 通信エンジンが初期化され、変数プール（`PARAM`）に `"KV_MODEL"` が定義されている状態。
+* **実行後の状態**: `Kv_Send` により `"?K\r"` が送出されて `param.SndData` に `"?K"` が記録され、即時応答がトランスポート内部に保持されます。続く `Kv_Receive` で機種コード文字列が `"KV_MODEL"` に格納され、`Judge` で判定後に回線をクローズします。
 
 ---
 
@@ -65,22 +71,22 @@ COMMAND, "SAMPLE_KV_SEND", ""
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Script as "シーケンス実行エンジン"
+    participant Driver as "TermSequenceDriver (実行エンジン)"
     participant Cmd as "Kv_SendCommand"
-    participant Trans as "Keyence 通信トランスポート"
-    participant Buf as "受信バッファ / 変数プール"
+    participant Engine as "KvUpperLinkEngine"
+    participant Trans as "KvTransportClient.Shared"
 
-    Script->>Cmd: Func(parent, param)
+    Driver->>Driver: ライセンス検証 (ValidateStep)
+    Driver->>Cmd: Func(parent, param)
     activate Cmd
-    Cmd->>Cmd: ライセンス・パラメータ範囲検証 ($PARAM$ 展開)
-    alt 引数および通信状態が正常な場合
-        Cmd->>Trans: プロトコル電文送受信 / 回線制御実行
-        Trans-->>Cmd: 正常応答フレーム / ステータス返却
-        Cmd->>Buf: 結果格納・状態更新 (IsCommandGo = true)
-        Cmd-->>Script: 正常完了 (次ステップへ進行)
-    else パラメータ不正・タイムアウト・異常応答の場合
-        Cmd->>Cmd: エラーログ出力 (_log.LogError)
-        Cmd-->>Script: 安全停止またはエラー結果格納
+    Cmd->>Cmd: ValidateParamRange(1, 3) ＆ $PARAM$ 展開
+    alt 引数個数が 1〜3 個の範囲内の場合
+        Cmd->>Engine: NormalizeRawCommand(rawCmd) (末尾 CR 補完)
+        Cmd->>Trans: SendOnly(normalized) (送出 ＆ 直近応答キャッシュ保持)
+        Cmd-->>Driver: 送信完了 (param.SndData 更新, IsCommandGo = true)
+    else 引数 0 個または 4 個以上・予期せぬ例外発生の場合
+        Cmd->>Cmd: _log.LogError / _log.LogCritical ＆ SetErrorAndHalt
+        Cmd-->>Driver: 安全停止 (IsCommandGo = false)
     end
     deactivate Cmd
 ```
@@ -91,10 +97,10 @@ sequenceDiagram
 
 入力データの異常や実行時エラーに対し、解析・実行エンジンが実行するセーフティ規約です。
 
-1. **引数範囲・プロトコル書式バリデーション保護**:
-   - 必須引数の欠落、デバイス表記・数値範囲の不正、または余剰引数が指定された場合は `_log.LogError` に詳細を記録し、`SetErrorAndHalt` により異常電文の送出を未然に遮断します。
-2. **通信タイムアウト・異常応答・排他ドメイン保護**:
-   - 相手機器の無応答タイムアウト、NAK／異常終了コード応答、または他通信ドメインとの排他競合が発生した場合は、例外クラッシュを起こさず安全にエラーハンドリングを行います。
+1. **引数範囲バリデーション保護**:
+   - 引数が省略された場合（0 個）または 4 個以上の引数が指定された場合は、`ValidateParamRange(1, 3)` により `_log.LogError` に詳細を記録し、`SetErrorAndHalt` で停止します（なお第 1 引数が空文字 `""` の場合は空文字列に正規化され、エラー停止せず通過します）。
+2. **送信処理中の例外防御**:
+   - `SendOnly` 内部での通信例外はトランスポート層で捕捉されてログ記録され、応答検証自体は後続の `Kv_Receive` 側で行われます。`Func` 内で万一予期せぬ例外が発生した場合は、`catch` 節で `_log.LogCritical` に記録し `SetErrorAndHalt(-1, ex.Message)` で安全停止します。
 
 ---
 
@@ -113,4 +119,4 @@ sequenceDiagram
 | No | テストカテゴリ | テスト条件（入力値） | 期待される結果（出力値） | 検証の目的 / 観点 |
 | :---: | :--- | :--- | :--- | :--- |
 | **1** | 正常系 | `IsSimulationMode = true` 環境下で第 1 引数 `Command` に `"?K"`（機種コード問合せ）を指定して実行 | `!param.HasError` かつ `param.IsCommandGo == true`、`param.SndData == "?K"`（送出電文は末尾 `\r` 付与済み）となる | 任意上位リンク ASCII コマンドの正規化および送出処理の検証 |
-| **2** | 異常系 | 必須引数 `Command` 欠落・引数範囲外（`ValidateParamRange(1, 3)` 違反）、または送信処理中の例外発生 | 引数検証エラーによる早期リターン、または `_log.LogCritical` 記録と `SetErrorAndHalt(-1, ex.Message)` による安全停止 | 引数境界チェックおよび送信例外時のクラッシュ防御検証 |
+| **2** | 異常系 | 引数 0 個（`new TermSequence { Name = "Kv_Send" }`）で `Func(null, invalidParam)` を実行 | `ValidateParamRange(1, 3)` により拒否され、`invalidParam.HasError == true` かつ `!invalidParam.IsCommandGo` となる | 必須引数 `Command` 欠落時のバリデーション拒否検証 |

@@ -9,11 +9,11 @@ TITLE, "キーエンスPLCデータ収集 (KEYENCE KV 上位リンク)"
 ; コマンド定義: PORT_OPEN (通信ポート接続)
 ; ------------------------------------------------------------------------------
 COMMAND, "PORT_OPEN"
-,PARAM, PROTOCOL, List, "通信プロトコル", "TCP", "UDP", "Serial"
-,PARAM, ENDPOINT, Text, "接続先IPまたはCOMポート", "192.168.0.10"
-,PARAM, PORT_OPT, Text, "ポート番号または通信条件", "8501"
-,PARAM, DATA_SUFFIX, List, "既定データ形式", ".U", ".S", ".H", ".D", ".L"
-,PARAM, AUTO_CR_CQ, List, "シリアルCR/CQ自動送出", "ON", "OFF"
+,PARAM, PROTOCOL, List, "通信プロトコル(空欄=プロパティ)", "", "TCP", "UDP", "Serial"
+,PARAM, ENDPOINT, List, "接続先IP/COM(空欄=プロパティ)", "", "127.0.0.1", "192.168.0.10", "COM10"
+,PARAM, PORT_OPT, List, "ポート/条件(空欄=プロパティ)", "", "8501", "9600,E,8,1"
+,PARAM, DATA_SUFFIX, List, "既定データ形式(空欄=プロパティ)", "", ".U", ".S", ".H", ".D", ".L"
+,PARAM, AUTO_CR_CQ, List, "シリアルCR/CQ自動送出(空欄=プロパティ)", "", "ON", "OFF"
 ,SEQUENCE, 10, Kv_Mode, "$PROTOCOL$", "$DATA_SUFFIX$", "$AUTO_CR_CQ$"
 ,SEQUENCE, 20, Kv_Open, "$ENDPOINT$", "$PORT_OPT$", "$PROTOCOL$"
 ,SEQUENCE, 30, Exit
