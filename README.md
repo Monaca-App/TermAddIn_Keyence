@@ -24,7 +24,7 @@ VBA マクロを一切記述することなく、 **標準の `.xlsx`（マク�
 > [!NOTE]
 > **利用前提とライセンス体系**  
 > 本エクステンションは [TermAddIn 本体](https://github.com/Monaca-App/TermAddIn) 上で動作します。  
-> TermAddIn ではプロトコル毎に個別ライセンスを設ける体系を採用しており、本機能のご利用には **`TermAddIn_Keyence` 個別ライセンス（一括 ¥49,000 / 月額 ¥4,400 / 週額 ¥1,500・税別）** が適用されます（ライセンス未配置・無効時は、Excel ブック再オープン時の既存ボタン無効化、および `Term.exe` 単体起動時の 3 分間期間限定版として動作します）。
+> TermAddIn ではプロトコル毎に個別ライセンスを設ける体系を採用しており、本機能のご利用には **`TermAddIn_Keyence` 個別ライセンス（一括 ¥49,000 / 月額 ¥4,400 / 週額 ¥1,500・税別）** が適用されます（ライセンス未配置・無効時は、Excel アドイン（`TermAddIn`）・`Term.exe` 単体起動ともに 10 分間の期間限定版として動作します）。
 
 ---
 
@@ -106,7 +106,7 @@ VBA マクロを一切記述することなく、 **標準の `.xlsx`（マク�
 1. **Microsoft Excel** および **Term** をすべて終了します。
 2. ダウンロードした **`TermAddIn_Keyence_Setup.zip`** を展開し、 **`TermAnalysis.Keyence/`** フォルダ内の **`setup.exe`** （または **`TermAnalysis.Keyence.Setup.msi`** ）を実行します。
    * ※ 管理者権限（UAC 承認）が必要です。
-   * ※ 拡張 DLL は共通インストール先（`C:\Program Files (x86)\Monacaアプリ工房\Monaca Common\`）へ配置され、サンプル資材が `C:\Program Files (x86)\Monacaアプリ工房\Monaca Sample\Keyence\` へ導入されます。
+   * ※ 拡張 DLL は共通インストール先（`C:\Program Files (x86)\Monaca_App_Store\Monaca Common\`）へ配置され、サンプル資材が `C:\Program Files (x86)\Monaca_App_Store\Monaca Sample\Keyence\` へ導入されます。
 3. インストール完了後、Excel（または `Term.exe`）を起動し、メイン画面の **`[通信モード]`** メニューから **`KEYENCE KV`** が選択できることを確認します。
 
 ### アンインストール手順
@@ -157,7 +157,7 @@ Ethernet TCP 上位リンクを用いた KV データメモリ（`DM100`〜`DM10
 ```
 
 ### 同梱サンプルマクロ・AI自動生成プロンプト集
-Ethernet（TCP/UDP）および RS-232C シリアル上位リンクに対応した動作確認用マクロスクリプト（CSV）および AI 自動生成プロンプトが **`Sample/Keyence/`** に収録されています（インストール時には `C:\Program Files (x86)\Monacaアプリ工房\Monaca Sample\Keyence\` へ配置され、デスクトップの `Monaca\Sample` ショートカットから参照できます）。
+Ethernet（TCP/UDP）および RS-232C シリアル上位リンクに対応した動作確認用マクロスクリプト（CSV）および AI 自動生成プロンプトが **`Sample/Keyence/`** に収録されています（インストール時には `C:\Program Files (x86)\Monaca_App_Store\Monaca Sample\Keyence\` へ配置され、デスクトップの `Monaca\Sample` ショートカットから参照できます）。
 
 * **[`Sample/Keyence/Keyence_KV.csv`](./Sample/Keyence/Keyence_KV.csv)**: KEYENCE KV 上位リンク汎用マクロスクリプトサンプル
 * **[`Sample/Keyence/Keyence_KV_prompt.md`](./Sample/Keyence/Keyence_KV_prompt.md)**: KEYENCE KV 上位リンク用マクロスクリプト AI 自動生成プロンプト
@@ -168,7 +168,7 @@ Ethernet（TCP/UDP）および RS-232C シリアル上位リンクに対応し�
 
 > [!NOTE]
 > **試用動作およびオンライン決済について**  
-> ライセンス未配置・無効時は、Excel ブック再オープン時の既存ボタン無効化（新規追加ボタンのみ試用可能）、および `Term.exe` 単体起動時の 3 分間期間限定版として動作します。  
+> ライセンス未配置・無効時は、Excel アドイン（`TermAddIn`）・`Term.exe` 単体起動ともに 10 分間の期間限定版として動作します（10 分超過後は未保有機能のみスルー／ロック）。  
 > 用途や利用期間に合わせて、一括購入（買い切り）またはサブスクリプション（月額・週額）からお選びいただけます。メールアドレスの誤入力によるライセンス不着を防ぐため、 **事前のメールアドレス確認** を行った上で、 **Stripe** による安全なオンライン決済へご案内いたします（表記価格はすべて税別です）。
 
 | プラン | 価格（税別） | お支払い・お申込み |
