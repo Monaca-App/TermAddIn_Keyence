@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="530" viewBox="0 0 660 530">
+  <defs>
+    <filter id="winShadow" x="-3%" y="-3%" width="106%" height="108%">
+      <feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#0F172A" flood-opacity="0.16" />
+    </filter>
+    <linearGradient id="titleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1E3A8A" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+    <style>
+      .ui { font-family: 'Yu Gothic UI', 'Meiryo UI', 'Segoe UI', sans-serif; }
+      .mono { font-family: 'Consolas', 'BIZ UDGothic', 'MS Gothic', monospace; }
+      .grp-box { fill: #F8FAFC; stroke: #CBD5E1; stroke-width: 1.2; rx: 4; }
+      .grp-lbl { font-family: 'Yu Gothic UI', 'Meiryo UI', sans-serif; font-size: 11.5px; font-weight: 700; fill: #1E293B; }
+      .input-box { fill: #FFFFFF; stroke: #94A3B8; stroke-width: 1; rx: 3; }
+      .input-hi { fill: #EFF6FF; stroke: #2563EB; stroke-width: 1.3; rx: 3; }
+      .btn-box { fill: #FFFFFF; stroke: #94A3B8; stroke-width: 1; rx: 4; }
+      .btn-pri { fill: #2563EB; stroke: #1D4ED8; stroke-width: 1; rx: 4; }
+      .callout-box { fill: #FFFBEB; stroke: #F59E0B; stroke-width: 1.3; rx: 6; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="660" height="530" fill="#F8FAFC" rx="10" />
+
+  <g transform="translate(26, 20)" filter="url(#winShadow)">
+    <rect x="0" y="0" width="608" height="438" rx="6" fill="#F3F4F6" stroke="#94A3B8" stroke-width="1.4" />
+    <path d="M 0 6 Q 0 0 6 0 L 602 0 Q 608 0 608 6 L 608 30 L 0 30 Z" fill="url(#titleGrad)" />
+    <text x="14" y="20" class="ui" font-size="12.5" font-weight="700" fill="#FFFFFF">通信ポートのプロパティ — [KEYENCE KV] タブ</text>
+
+    <path d="M 14 62 L 14 42 Q 14 38 18 38 L 108 38 Q 112 38 112 42 L 112 62 Z" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="1" />
+    <text x="63" y="53" class="ui" font-size="11.5" fill="#475569" text-anchor="middle">コマンド集</text>
+    <path d="M 114 62 L 114 40 Q 114 36 118 36 L 236 36 Q 240 36 240 40 L 240 62 Z" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.2" />
+    <text x="177" y="53" class="ui" font-size="11.5" font-weight="700" fill="#1D4ED8" text-anchor="middle">KEYENCE KV</text>
+
+    <rect x="14" y="61" width="580" height="328" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.2" />
+    <line x1="115" y1="61" x2="239" y2="61" stroke="#FFFFFF" stroke-width="2" />
+
+    <!-- GroupBox 1: Ethernet 上位リンク設定 -->
+    <rect x="28" y="76" width="552" height="90" class="grp-box" />
+    <rect x="38" y="68" width="292" height="16" fill="#FFFFFF" />
+    <text x="42" y="80" class="grp-lbl">Ethernet 上位リンク設定（KV-8000 / 7500 / 5500 / Nano）</text>
+
+    <text x="42" y="106" class="ui" font-size="11" fill="#334155">通信方式:</text>
+    <rect x="150" y="90" width="184" height="24" class="input-hi" />
+    <text x="160" y="106" class="mono" font-size="11.5" font-weight="700" fill="#1E3A8A">KV Ethernet/TCP</text>
+    <polygon points="320,100 328,100 324,106" fill="#1E40AF" />
+    <text x="344" y="106" class="ui" font-size="10.5" fill="#64748B">(TCP / UDP / Serial RS-232C)</text>
+
+    <text x="42" y="144" class="ui" font-size="11" fill="#334155">接続先 IP / ホスト:</text>
+    <rect x="150" y="128" width="150" height="24" class="input-box" />
+    <text x="160" y="144" class="mono" font-size="11.5" fill="#0F172A">192.168.0.10</text>
+
+    <text x="312" y="144" class="ui" font-size="11" fill="#334155">ポート:</text>
+    <rect x="356" y="128" width="96" height="24" class="input-box" />
+    <text x="366" y="144" class="mono" font-size="11.5" fill="#0F172A">8501</text>
+    <rect x="460" y="128" width="106" height="24" class="btn-box" />
+    <text x="513" y="144" class="ui" font-size="10.5" font-weight="600" fill="#1E293B" text-anchor="middle">既定値 (8501)</text>
+
+    <!-- GroupBox 2: シリアル上位リンク設定 -->
+    <rect x="28" y="176" width="552" height="58" class="grp-box" />
+    <rect x="38" y="168" width="244" height="16" fill="#FFFFFF" />
+    <text x="42" y="180" class="grp-lbl">シリアル上位リンク設定（RS-232C / c2c 仮想COM）</text>
+
+    <text x="42" y="212" class="ui" font-size="11" fill="#334155">COMポート:</text>
+    <rect x="116" y="196" width="136" height="24" class="input-box" />
+    <text x="126" y="212" class="mono" font-size="11.5" fill="#475569">COM10</text>
+    <rect x="258" y="196" width="60" height="24" class="btn-box" />
+    <text x="288" y="212" class="ui" font-size="10.5" fill="#1E293B" text-anchor="middle">再検索</text>
+
+    <text x="334" y="212" class="ui" font-size="11" fill="#334155">シリアル通信条件:</text>
+    <rect x="434" y="196" width="132" height="24" class="input-box" />
+    <text x="444" y="212" class="mono" font-size="11.5" fill="#475569">9600,E,8,1</text>
+
+    <!-- GroupBox 3: 上位リンク プロトコル詳細設定 -->
+    <rect x="28" y="244" width="552" height="82" class="grp-box" />
+    <rect x="38" y="236" width="178" height="16" fill="#FFFFFF" />
+    <text x="42" y="248" class="grp-lbl">上位リンク プロトコル詳細設定</text>
+
+    <text x="42" y="276" class="ui" font-size="11" fill="#334155">既定データ形式:</text>
+    <rect x="148" y="260" width="134" height="24" class="input-box" />
+    <text x="158" y="276" class="mono" font-size="11.5" fill="#0F172A">.U (16bit符号無)</text>
+
+    <text x="310" y="276" class="ui" font-size="11" fill="#334155">応答タイムアウト (ms):</text>
+    <rect x="444" y="260" width="122" height="24" class="input-box" />
+    <text x="454" y="276" class="mono" font-size="11.5" fill="#0F172A">3000</text>
+
+    <rect x="42" y="298" width="14" height="14" rx="2" fill="#2563EB" />
+    <path d="M 45 305 L 48 308 L 53 301" fill="none" stroke="#FFFFFF" stroke-width="1.8" />
+    <text x="64" y="309" class="ui" font-size="11" fill="#1E293B">シリアル接続／切断時に CR / CQ コマンドを自動送出する</text>
+
+    <!-- GroupBox 4: 接続構成プレビュー -->
+    <rect x="28" y="336" width="552" height="44" class="grp-box" />
+    <rect x="38" y="328" width="114" height="16" fill="#FFFFFF" />
+    <text x="42" y="340" class="grp-lbl">接続構成プレビュー</text>
+    <text x="42" y="366" class="ui" font-size="10.5" fill="#475569">現在の KV 上位リンク接続先:</text>
+    <text x="192" y="366" class="mono" font-size="11.5" font-weight="700" fill="#1E3A8A">KV Ethernet/TCP 192.168.0.10:8501 [.U]</text>
+
+    <rect x="200" y="398" width="96" height="30" class="btn-pri" />
+    <text x="248" y="417" class="ui" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">OK</text>
+    <rect x="312" y="398" width="96" height="30" class="btn-box" />
+    <text x="360" y="417" class="ui" font-size="12" font-weight="600" fill="#1E293B" text-anchor="middle">キャンセル</text>
+  </g>
+
+  <rect x="26" y="470" width="608" height="44" class="callout-box" />
+  <text x="42" y="489" class="ui" font-size="11" font-weight="700" fill="#92400E">メイン画面の［通信モード(M)］で「KEYENCE KV 上位リンク」選択時に自動表示</text>
+  <text x="42" y="506" class="ui" font-size="10.5" fill="#451A03">・標準ポートは 8501。シリアル上位リンク時は「CR / CQ 自動送出」ON で開始・終了コマンドを自動処理します。</text>
+</svg>
